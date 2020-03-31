@@ -5,9 +5,8 @@ function usage { cat << DONE; }
 Usage:
   mk_wine_env <wine binary> <wine prefix> <_env filename>
 
-Examples:
+Example:
   mk_wine_env /usr/bin/wine ~/.wine ~/wine_env
-  mk_wine_env ~/Wine/5.0/bin/wine ~/Wine/Prefixes/myapp_pfx ~/Wine/myapp_env
 
   mk_wine_env with no arguments runs in interactive mode.
 
@@ -36,22 +35,22 @@ cd "$(dirname "${BIN}")"
 case "$(basename "${BIN}")" in
   wine)
     if test -d ../lib64; then
-	  LIB64='${W}/lib64:'
-	  W64='64'
-	else
-	  LIB64=''
-	  W64=''
-	fi;;
+      LIB64='${W}/lib64:'
+      W64='64'
+    else
+      LIB64=''
+      W64=''
+    fi;;
   wine64)
     LIB64='${W}/lib64:'
-	W64='64';;
+    W64='64';;
   '')
     echo
     echo 'ERROR: No Wine binary given.'
-	exit 1;;
+    exit 1;;
   *)
     echo 'ERROR: Is Wine binary correct?'
-	exit 1;;
+    exit 1;;
 esac
 cd - >/dev/null
 

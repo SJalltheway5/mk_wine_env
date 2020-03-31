@@ -26,6 +26,11 @@ if test -z ${EXE}; then
   echo -n '.exe file: '
   read -e EXE
 fi
+EXE=${EXE//~/$HOME}    # Make ~ mean $HOME
+# Check for and remove '' to allow drag-and-drop in some terminal emulators
+test "$(echo "${EXE}" | cut -c -1)" == "'" &&\
+  test "$(echo "${EXE}" | rev | cut -c -1)" == "'" &&\
+  PFX="$(echo "${EXE}" | cut -c 2- | rev | cut -c 2- | rev)"
 EXE_DIR="$(cd "$(dirname "${EXE}")" && pwd)"
 EXE="$(basename "${EXE}")"
 
@@ -35,6 +40,11 @@ if test -z ${ENV}; then
   echo -n 'Wine _env: '
   read -e ENV
 fi
+ENV=${ENV//~/$HOME}    # Make ~ mean $HOME
+# Check for and remove '' to allow drag-and-drop in some terminal emulators
+test "$(echo "${ENV}" | cut -c -1)" == "'" &&\
+  test "$(echo "${ENV}" | rev | cut -c -1)" == "'" &&\
+  PFX="$(echo "${ENV}" | cut -c 2- | rev | cut -c 2- | rev)"
 ENV_DIR="$(cd "$(dirname "${ENV}")" && pwd)"
 ENV="$(basename "${ENV}")"
 ENV="${ENV_DIR}/${ENV}"
@@ -74,5 +84,5 @@ cd "'${EXE_DIR}'"
 wine "${EXE}" "${@}"' > "${SCRIPT}"
 
 chmod +x "${SCRIPT}"
-echo 'Script written to "'${SCRIPT_DIR}/${SCRIPT}'"
+echo '  Script written to "'${SCRIPT_DIR}/${SCRIPT}'"
 '

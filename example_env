@@ -1,0 +1,32 @@
+#!/bin/bash
+# Example Wine environment file
+# Keep Wine paths from stacking up in $PATH
+OLD_W="${W}"
+test -z "${OLD_W}" || PATH="$(echo ${PATH} | sed s@"${OLD_W}/bin:"@@g)"
+# Set Wine environment
+W="${HOME}/Wine/5.0"  # Set this to Wine directory
+PATH="$(echo ${PATH} | sed s@"${W}/bin:"@@g)"
+export PATH="${W}/bin:${PATH}"
+export WINEVERPATH="${W}"
+export WINEPREFIX="${HOME}/Wine/Prefixes/example_pfx"
+export WINESERVER="${W}/bin/wineserver"
+export WINELOADER="${W}/bin/wine"
+export WINEDLLPATH="${W}/lib/wine/fakedlls"
+export WINEDLLOVERRIDES=""
+export WINEDEBUG=""
+export LD_LIBRARY_PATH="${W}/lib:${LD_LIBRARY_PATH}"
+# Set Wine functions
+function winecfg { wine winecfg.exe; }
+function wineboot { wine wineboot.exe; }
+function explorer { wine explorer.exe; }
+function notepad { wine notepad.exe; }
+function wordpad { wine wordpad.exe; }
+function cmd { wine cmd.exe; }
+function regedit { wine regedit.exe; }
+function wine_env { cat << DONE; }
+Wine binary: $(which wine)
+             $(wine --version)
+Wine prefix: $WINEPREFIX
+DONE
+# Print current Wine environment
+wine_env

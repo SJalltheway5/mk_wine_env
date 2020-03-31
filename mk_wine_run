@@ -1,0 +1,78 @@
+#!/bin/bash
+# Create bash script to run Wine application in given environment
+
+# Usage
+function usage { cat << DONE; }
+Usage:
+  mk_wine_run <Windows .exe> <Wine _env> <script name>
+
+Example:
+  mk_wine_run ~/Windows/myapp.exe ~/myapp_env ~/myapp.sh
+
+  mk_wine_run with no arguments runs in interactive mode.
+
+DONE
+
+case ${1} in
+  h|help|-h|-help|--help) usage; exit 0;;
+esac
+if test ${#} -gt 3; then
+  usage; exit 1
+fi
+
+# Set Windows .exe file
+EXE="${1}"
+if test -z ${EXE}; then
+  echo -n '.exe file: '
+  read -e EXE
+fi
+EXE_DIR="$(cd "$(dirname "${EXE}")" && pwd)"
+EXE="$(basename "${EXE}")"
+
+# Set Wine environment file
+ENV="${2}"
+if test -z ${ENV}; then
+  echo -n 'Wine _env: '
+  read -e ENV
+fi
+ENV_DIR="$(cd "$(dirname "${ENV}")" && pwd)"
+ENV="$(basename "${ENV}")"
+ENV="${ENV_DIR}/${ENV}"
+
+# Set script name
+SCRIPT="${3}"
+test -z "${SCRIPT}" && SCRIPT='run.sh'
+if test -f "${SCRIPT}"; then
+  echo 'ERROR: "'${SCRIPT}'" already exists.'
+  exit 1
+fi
+SCRIPT_DIR="$(cd "$(dirname "${SCRIPT}")" && pwd)"
+
+# Make ENV and EXE_DIR relative to SCRIPT_DIR
+ENV="${ENV//"${SCRIPT_DIR}"/.}"
+EXE_DIR="${EXE_DIR//"${SCRIPT_DIR}"/.}"
+
+# Write script template
+echo 'Creating script for Wine app...'
+echo \
+'#!/bin/bash
+# Wine application script template
+# VVV  Remove this line  VVV
+echo "Edit this script before running."; exit 1
+
+# Change to script directory
+cd "${0%/*}"
+
+# Set up Wine environment
+source "'${ENV}'"
+
+# Set application .exe to run
+EXE="'${EXE}'"
+
+# Run application
+cd "'${EXE_DIR}'"
+wine "${EXE}" "${@}"' > "${SCRIPT}"
+
+chmod +x "${SCRIPT}"
+echo 'Script written to "'${SCRIPT_DIR}/${SCRIPT}'"
+'

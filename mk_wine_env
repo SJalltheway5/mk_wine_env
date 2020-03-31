@@ -1,0 +1,122 @@
+#!/bin/bash
+
+# Usage
+function usage { cat << DONE; }
+Usage:
+  mk_wine_env <wine binary> <wine prefix> <_env filename>
+
+Examples:
+  mk_wine_env /usr/bin/wine ~/.wine ~/wine_env
+  mk_wine_env ~/Wine/5.0/bin/wine ~/Wine/Prefixes/myapp_pfx ~/Wine/myapp_env
+
+  mk_wine_env with no arguments runs in interactive mode.
+
+DONE
+
+case ${1} in
+  h|help|-h|-help|--help) usage; exit 0;;
+esac
+if test ${#} -gt 3; then
+  usage; exit 1
+fi
+
+# Set Wine binary
+BIN="${1}"
+if test -z "${BIN}"; then
+  echo -n 'Wine binary: '
+  read -e BIN
+fi
+BIN="${BIN//~/$HOME}"  # Make ~ mean $HOME
+# Check for and remove '' to allow drag-and-drop in some terminal emulators
+test "$(echo "${BIN}" | cut -c -1)" == "'" &&\
+  test "$(echo "${BIN}" | rev | cut -c -1)" == "'" &&\
+  BIN="$(echo "${BIN}" | cut -c 2- | rev | cut -c 2- | rev)"
+# Check Wine binary
+cd "$(dirname "${BIN}")"
+case "$(basename "${BIN}")" in
+  wine)
+    if test -d ../lib64; then
+	  LIB64='${W}/lib64:'
+	  W64='64'
+	else
+	  LIB64=''
+	  W64=''
+	fi;;
+  wine64)
+    LIB64='${W}/lib64:'
+	W64='64';;
+  '')
+    echo
+    echo 'ERROR: No Wine binary given.'
+	exit 1;;
+  *)
+    echo 'ERROR: Is Wine binary correct?'
+	exit 1;;
+esac
+cd - >/dev/null
+
+# Directory for new/of existing Wine prefix
+PFX="${2}"
+if test -z "${PFX}"; then
+  echo -n 'Wine prefix: '
+  read -e PFX
+fi
+PFX=${PFX//~/$HOME}    # Make ~ mean $HOME
+# Check for and remove '' to allow drag-and-drop in some terminal emulators
+test "$(echo "${PFX}" | cut -c -1)" == "'" &&\
+  test "$(echo "${PFX}" | rev | cut -c -1)" == "'" &&\
+  PFX="$(echo "${PFX}" | cut -c 2- | rev | cut -c 2- | rev)"
+if test -z "${PFX}"; then
+  echo
+  echo 'ERROR: No Wine prefix given.'
+  exit 1
+fi
+test -d "${PFX}" || mkdir -p "${PFX}"
+PFX="$(cd "${PFX}" && pwd)"
+
+# Set output _env file
+ENV="${3}"
+if test -z "${ENV}"; then
+  ENV="$(basename "${PFX}")"_env
+  ENV="${ENV//_pfx_env/_env}"
+fi
+export ENV
+
+# Create output _env file
+echo 'Creating Wine environment file...'
+WINE_DIR="$(cd "$(dirname "${BIN}")/.." && pwd)"
+
+echo \
+'#!/bin/bash
+OLD_W="${W}"
+test -z "${OLD_W}" || PATH="$(echo ${PATH} | sed s@"${OLD_W}/bin:"@@g)"
+W="'"${WINE_DIR}"'"
+PATH="$(echo ${PATH} | sed s@"${W}/bin:"@@g)"
+export PATH="${W}/bin:${PATH}"
+export WINEVERPATH="${W}"
+export WINEPREFIX="'"${PFX}"'"
+export WINESERVER="${W}/bin/wineserver"
+export WINELOADER="${W}/bin/wine'${W64}'"
+export WINEDLLPATH="${W}/lib/wine/fakedlls"
+export WINEDLLOVERRIDES=""
+export WINEDEBUG=""
+export LD_LIBRARY_PATH="'${LIB64}'${W}/lib:${LD_LIBRARY_PATH}"
+function winecfg { wine'${W64}' winecfg.exe; }
+function wineboot { wine'${W64}' wineboot.exe; }
+function explorer { wine'${W64}' explorer.exe; }
+function notepad { wine'${W64}' notepad.exe; }
+function wordpad { wine'${W64}' wordpad.exe; }
+function cmd { wine'${W64}' cmd.exe; }
+function regedit { wine'${W64}' regedit.exe; }
+function wine_env { cat << DONE; }
+Wine binary: $(which wine'${W64}')
+             $(wine'${W64}' --version)
+Wine prefix: $WINEPREFIX
+DONE
+wine_env' > "${ENV}"
+
+# End message
+echo '  File saved to '\"${PWD}/${ENV}\"'
+To enable it, run:
+  source '\"${PWD}/${ENV}\"'
+'

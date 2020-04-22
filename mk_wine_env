@@ -25,16 +25,16 @@ if test -z "${BIN}"; then
   echo -n 'Wine binary: '
   read -e BIN
 fi
-BIN="${BIN//~/$HOME}"  # Make ~ mean $HOME
-# Check for and remove '' to allow drag-and-drop in some terminal emulators
+# Allow ~ and ''
+BIN="${BIN//"~"/"$HOME"}"
 test "$(echo "${BIN}" | cut -c -1)" == "'" &&\
   test "$(echo "${BIN}" | rev | cut -c -1)" == "'" &&\
   BIN="$(echo "${BIN}" | cut -c 2- | rev | cut -c 2- | rev)"
 # Check Wine binary
-cd "$(dirname "${BIN}")"
+pushd "$(dirname "${BIN}")" >/dev/null
 case "$(basename "${BIN}")" in
   wine)
-    if test -d ../lib64; then
+    if test -d ../lib64 && test -f wine64; then
       LIB64='${W}/lib64:'
       W64='64'
     else
@@ -52,7 +52,7 @@ case "$(basename "${BIN}")" in
     echo 'ERROR: Is Wine binary correct?'
     exit 1;;
 esac
-cd - >/dev/null
+popd >/dev/null
 
 # Directory for new/of existing Wine prefix
 PFX="${2}"
@@ -60,8 +60,8 @@ if test -z "${PFX}"; then
   echo -n 'Wine prefix: '
   read -e PFX
 fi
-PFX=${PFX//~/$HOME}    # Make ~ mean $HOME
-# Check for and remove '' to allow drag-and-drop in some terminal emulators
+# Allow ~ and ''
+PFX="${PFX//"~"/"$HOME"}"
 test "$(echo "${PFX}" | cut -c -1)" == "'" &&\
   test "$(echo "${PFX}" | rev | cut -c -1)" == "'" &&\
   PFX="$(echo "${PFX}" | cut -c 2- | rev | cut -c 2- | rev)"
@@ -107,15 +107,16 @@ function notepad { wine'${W64}' notepad.exe; }
 function wordpad { wine'${W64}' wordpad.exe; }
 function cmd { wine'${W64}' cmd.exe; }
 function regedit { wine'${W64}' regedit.exe; }
+function wine { wine'${W64}' "${@}"; }
 function wine_env { cat << DONE; }
 Wine binary: $(which wine'${W64}')
              $(wine'${W64}' --version)
-Wine prefix: $WINEPREFIX
+Wine prefix: ${WINEPREFIX}
 DONE
 wine_env' > "${ENV}"
 
 # End message
-echo '  File saved to '\"${PWD}/${ENV}\"'
+echo '  File saved to "'${PWD}/${ENV}'"
 To enable it, run:
-  source '\"${PWD}/${ENV}\"'
+  source "'${PWD}/${ENV}'"
 '

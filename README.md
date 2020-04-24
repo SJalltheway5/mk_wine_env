@@ -65,5 +65,5 @@ $ mk_wine_run
 ```
 Note the script in this case is `run.sh`, due to no script name being explicitly given.  This script is a template and is intended to be edited before being run (see `example_run.sh`).
 ### TODO:
-[ ] Fix "wine6464" bug when running `wine %command%` in a 64-bit prefix (`wine64 %command%` seems fine)<br>
-[ ] More testing
+  - [ ]Fix "wine6464" bug when running `wine %command%` in a 64-bit prefix (`wine64 %command%` seems fine)<br>
+  - [ ]More testing

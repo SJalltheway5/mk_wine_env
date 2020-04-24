@@ -8,7 +8,7 @@ Usage:
 Example:
   mk_wine_env /usr/bin/wine ~/.wine ~/wine_env
 
-  mk_wine_env with no arguments runs in interactive mode.
+mk_wine_env with no arguments runs in interactive mode.
 
 DONE
 
@@ -26,7 +26,7 @@ if test -z "${BIN}"; then
   read -e BIN
 fi
 # Allow ~ and ''
-BIN="${BIN//"~"/"$HOME"}"
+BIN="${BIN//"~"/"${HOME}"}"
 test "$(echo "${BIN}" | cut -c -1)" == "'" &&\
   test "$(echo "${BIN}" | rev | cut -c -1)" == "'" &&\
   BIN="$(echo "${BIN}" | cut -c 2- | rev | cut -c 2- | rev)"
@@ -37,6 +37,7 @@ case "$(basename "${BIN}")" in
     if test -d ../lib64 && test -f wine64; then
       LIB64='${W}/lib64:'
       W64='64'
+      #BIN="${BIN//'/bin/wine'/'/bin/wine64'}"
     else
       LIB64=''
       W64=''
@@ -61,7 +62,7 @@ if test -z "${PFX}"; then
   read -e PFX
 fi
 # Allow ~ and ''
-PFX="${PFX//"~"/"$HOME"}"
+PFX="${PFX//"~"/"${HOME}"}"
 test "$(echo "${PFX}" | cut -c -1)" == "'" &&\
   test "$(echo "${PFX}" | rev | cut -c -1)" == "'" &&\
   PFX="$(echo "${PFX}" | cut -c 2- | rev | cut -c 2- | rev)"

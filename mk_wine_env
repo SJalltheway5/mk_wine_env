@@ -101,13 +101,13 @@ export WINEDLLPATH="${W}/lib/wine/fakedlls"
 export WINEDLLOVERRIDES=""
 export WINEDEBUG=""
 export LD_LIBRARY_PATH="'${LIB64}'${W}/lib:${LD_LIBRARY_PATH}"
-function winecfg { wine'${W64}' winecfg.exe; }
-function wineboot { wine'${W64}' wineboot.exe; }
-function explorer { wine'${W64}' explorer.exe; }
-function notepad { wine'${W64}' notepad.exe; }
-function wordpad { wine'${W64}' wordpad.exe; }
-function cmd { wine'${W64}' cmd.exe; }
-function regedit { wine'${W64}' regedit.exe; }
+function winecfg { wine'${W64}' winecfg.exe "${@}"; }
+function wineboot { wine'${W64}' wineboot.exe "${@}"; }
+function explorer { wine'${W64}' explorer.exe "${@}"; }
+function notepad { wine'${W64}' notepad.exe "${@}"; }
+function wordpad { wine'${W64}' wordpad.exe "${@}"; }
+function cmd { wine'${W64}' cmd.exe "${@}"; }
+function regedit { wine'${W64}' regedit.exe "${@}"; }
 function wine { wine'${W64}' "${@}"; }
 function wine_env { cat << DONE; }
 Wine binary: $(which wine'${W64}')

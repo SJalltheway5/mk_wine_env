@@ -1,14 +1,15 @@
 #!/bin/bash
+# Script to create various Wine environments
 
 # Usage
 function usage { cat << DONE; }
 Usage:
-  mk_wine_env <wine binary> <wine prefix> <_env filename>
+  $(basename ${0}) <wine binary> <wine prefix> <_env filename>
 
 Example:
-  mk_wine_env /usr/bin/wine ~/.wine ~/wine_env
+  $(basename ${0}) /usr/bin/wine ~/.wine ~/wine_env
 
-mk_wine_env with no arguments runs in interactive mode.
+$(basename ${0}) with no arguments runs in interactive mode.
 
 DONE
 
@@ -37,7 +38,6 @@ case "$(basename "${BIN}")" in
     if test -d ../lib64 && test -f wine64; then
       LIB64='${W}/lib64:'
       W64='64'
-      #BIN="${BIN//'/bin/wine'/'/bin/wine64'}"
     else
       LIB64=''
       W64=''
@@ -77,14 +77,28 @@ PFX="$(cd "${PFX}" && pwd)"
 # Set output _env file
 ENV="${3}"
 if test -z "${ENV}"; then
-  ENV="$(basename "${PFX}")"_env
+  ENV="./$(basename "${PFX}")_env"
   ENV="${ENV//_pfx_env/_env}"
 fi
+# Allow ~ and ''
+ENV="${ENV//"~"/"${HOME}"}"
+test "$(echo "${ENV}" | cut -c -1)" == "'" &&\
+  test "$(echo "${ENV}" | rev | cut -c -1)" == "'" &&\
+  ENV="$(echo "${ENV}" | cut -c 2- | rev | cut -c 2- | rev)"
+ENV="$(cd "$(dirname "${ENV}")" && pwd)/$(basename "${ENV}")"
 export ENV
 
 # Create output _env file
 echo 'Creating Wine environment file...'
 WINE_DIR="$(cd "$(dirname "${BIN}")/.." && pwd)"
+
+## Not a particularly elegant workaround for wine6464 or 32-bit Wine breakage
+## Might have fixed this?
+## ( Removed ${W64} from WINELOADER
+## and skipped setting WINE_FUNC )
+#test -z ${W64} &&\
+#  WINE_FUNC='unset -f wine' ||\
+#  WINE_FUNC='function wine { wine64 ${@}; }'
 
 echo \
 '#!/bin/bash
@@ -96,19 +110,18 @@ export PATH="${W}/bin:${PATH}"
 export WINEVERPATH="${W}"
 export WINEPREFIX="'"${PFX}"'"
 export WINESERVER="${W}/bin/wineserver"
-export WINELOADER="${W}/bin/wine'${W64}'"
+export WINELOADER="${W}/bin/wine"
 export WINEDLLPATH="${W}/lib/wine/fakedlls"
 export WINEDLLOVERRIDES=""
-export WINEDEBUG=""
+export WINEDEBUG="fixme-all"
 export LD_LIBRARY_PATH="'${LIB64}'${W}/lib:${LD_LIBRARY_PATH}"
-function winecfg { wine'${W64}' winecfg.exe "${@}"; }
-function wineboot { wine'${W64}' wineboot.exe "${@}"; }
-function explorer { wine'${W64}' explorer.exe "${@}"; }
-function notepad { wine'${W64}' notepad.exe "${@}"; }
-function wordpad { wine'${W64}' wordpad.exe "${@}"; }
-function cmd { wine'${W64}' cmd.exe "${@}"; }
-function regedit { wine'${W64}' regedit.exe "${@}"; }
-function wine { wine'${W64}' "${@}"; }
+function winecfg { wine'${W64}' winecfg.exe ${@}; }
+function wineboot { wine'${W64}' wineboot.exe ${@}; }
+function explorer { wine'${W64}' explorer.exe ${@}; }
+function notepad { wine'${W64}' notepad.exe ${@}; }
+function wordpad { wine'${W64}' wordpad.exe ${@}; }
+function cmd { wine'${W64}' cmd.exe ${@}; }
+function regedit { wine'${W64}' regedit.exe ${@}; }
 function wine_env { cat << DONE; }
 Wine binary: $(which wine'${W64}')
              $(wine'${W64}' --version)
@@ -117,7 +130,7 @@ DONE
 wine_env' > "${ENV}"
 
 # End message
-echo '  File saved to "'${PWD}/${ENV}'"
+echo '  File saved to "'${ENV}'"
 To enable it, run:
-  source "'${PWD}/${ENV}'"
+  source "'${ENV}'"
 '

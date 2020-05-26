@@ -12,8 +12,8 @@ export WINEPREFIX="${HOME}/Wine/Prefixes/example_pfx"
 export WINESERVER="${W}/bin/wineserver"
 export WINELOADER="${W}/bin/wine"
 export WINEDLLPATH="${W}/lib/wine/fakedlls"
-export WINEDLLOVERRIDES=""
-export WINEDEBUG=""
+export WINEDLLOVERRIDES="d3d11=n,b;dxgi=n,b"  # DXVK overrides (not default)
+export WINEDEBUG="fixme-all"
 export LD_LIBRARY_PATH="${W}/lib:${LD_LIBRARY_PATH}"
 # Set Wine functions
 function winecfg { wine winecfg.exe; }
@@ -26,7 +26,7 @@ function regedit { wine regedit.exe; }
 function wine_env { cat << DONE; }
 Wine binary: $(which wine)
              $(wine --version)
-Wine prefix: $WINEPREFIX
+Wine prefix: ${WINEPREFIX}
 DONE
 # Print current Wine environment
 wine_env

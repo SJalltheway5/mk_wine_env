@@ -4,16 +4,16 @@
 # Usage
 function usage { cat << DONE; }
 Usage:
-  mk_wine_run <Windows .exe> <Wine _env> <script name>
+  $(basename ${0}) <Windows .exe> <Wine _env> <script name>
 
 Example:
-  mk_wine_run ~/Windows/myapp.exe ~/myapp_env ~/myapp.sh
+  $(basename ${0}) ~/Windows/myapp.exe ~/myapp_env ~/myapp.sh
 
-  mk_wine_run with no arguments runs in interactive mode.
+$(basename ${0}) with no arguments runs in interactive mode.
 
 DONE
 
-case ${1} in
+case "${1}" in
   h|help|-h|-help|--help) usage; exit 0;;
 esac
 if test ${#} -gt 3; then
@@ -22,12 +22,12 @@ fi
 
 # Set Windows .exe file
 EXE="${1}"
-if test -z ${EXE}; then
+if test -z "${EXE}"; then
   echo -n '.exe file: '
   read -e EXE
 fi
-EXE="${EXE//"~"/"$HOME"}"    # Make ~ mean $HOME
-# Check for and remove '' to allow drag-and-drop in some terminal emulators
+# Allow ~ and ''
+EXE="${EXE//"~"/"$HOME"}"
 test "$(echo "${EXE}" | cut -c -1)" == "'" &&\
   test "$(echo "${EXE}" | rev | cut -c -1)" == "'" &&\
   PFX="$(echo "${EXE}" | cut -c 2- | rev | cut -c 2- | rev)"
@@ -40,8 +40,8 @@ if test -z ${ENV}; then
   echo -n 'Wine _env: '
   read -e ENV
 fi
-ENV="${ENV//"~"/"$HOME"}"    # Make ~ mean $HOME
-# Check for and remove '' to allow drag-and-drop in some terminal emulators
+# Allow ~ and ''
+ENV="${ENV//"~"/"$HOME"}"
 test "$(echo "${ENV}" | cut -c -1)" == "'" &&\
   test "$(echo "${ENV}" | rev | cut -c -1)" == "'" &&\
   PFX="$(echo "${ENV}" | cut -c 2- | rev | cut -c 2- | rev)"

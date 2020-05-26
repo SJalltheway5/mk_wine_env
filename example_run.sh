@@ -14,4 +14,4 @@ EXE="example.exe"
 
 # Run application
 cd "."
-wine "${EXE}" "${@}"
+wine "${EXE}" ${@}

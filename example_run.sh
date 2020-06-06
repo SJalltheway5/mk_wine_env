@@ -4,7 +4,7 @@
 echo "Edit this script before running."; exit 1
 
 # Change to script directory
-cd "${0%/*}"
+cd "${0%/*}" || exit 1
 
 # Set up Wine environment
 source "./example_env"
@@ -13,5 +13,5 @@ source "./example_env"
 EXE="example.exe"
 
 # Run application
-cd "."
-wine "${EXE}" ${@}
+cd "." || exit 1
+wine "${EXE}" "${@}"

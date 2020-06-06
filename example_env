@@ -2,10 +2,12 @@
 # Example Wine environment file
 # Keep Wine paths from stacking up in $PATH
 OLD_W="${W}"
-test -z "${OLD_W}" || PATH="$(echo ${PATH} | sed s@"${OLD_W}/bin:"@@g)"
+#test -z "${OLD_W}" || PATH="$(echo ${PATH} | sed s@"${OLD_W}/bin:"@@g)"
+test -z "${OLD_W}" || PATH="${PATH//"${OLD_W}/bin:"/}"
 # Set Wine environment
 W="${HOME}/Wine/5.0"  # Set this to Wine directory
-PATH="$(echo ${PATH} | sed s@"${W}/bin:"@@g)"
+#PATH="$(echo ${PATH} | sed s@"${W}/bin:"@@g)"
+PATH="${PATH//"${W}/bin:"//}"
 export PATH="${W}/bin:${PATH}"
 export WINEVERPATH="${W}"
 export WINEPREFIX="${HOME}/Wine/Prefixes/example_pfx"

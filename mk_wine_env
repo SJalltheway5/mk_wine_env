@@ -1,15 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Script to create various Wine environments
 
 # Usage
 function usage { cat << DONE; }
 Usage:
-  $(basename ${0}) <wine binary> <wine prefix> <_env filename>
+  $(basename "${0}") <wine binary> <wine prefix> <_env filename>
 
 Example:
-  $(basename ${0}) /usr/bin/wine ~/.wine ~/wine_env
+  $(basename "${0}") /usr/bin/wine ~/.wine ~/wine_env
 
-$(basename ${0}) with no arguments runs in interactive mode.
+$(basename "${0}") with no arguments runs in interactive mode.
 
 DONE
 
@@ -22,10 +22,7 @@ fi
 
 # Set Wine binary
 BIN="${1}"
-if test -z "${BIN}"; then
-  echo -n 'Wine binary: '
-  read -e BIN
-fi
+test -z "${BIN}" && read -rep 'Wine binary: ' BIN
 # Allow ~ and ''
 BIN="${BIN//"~"/"${HOME}"}"
 test "$(echo "${BIN}" | cut -c -1)" == "'" &&\
@@ -57,10 +54,7 @@ popd >/dev/null
 
 # Directory for new/of existing Wine prefix
 PFX="${2}"
-if test -z "${PFX}"; then
-  echo -n 'Wine prefix: '
-  read -e PFX
-fi
+test -z "${PFX}" && read -rep 'Wine prefix: ' PFX
 # Allow ~ and ''
 PFX="${PFX//"~"/"${HOME}"}"
 test "$(echo "${PFX}" | cut -c -1)" == "'" &&\
@@ -92,20 +86,12 @@ export ENV
 echo 'Creating Wine environment file...'
 WINE_DIR="$(cd "$(dirname "${BIN}")/.." && pwd)"
 
-## Not a particularly elegant workaround for wine6464 or 32-bit Wine breakage
-## Might have fixed this?
-## ( Removed ${W64} from WINELOADER
-## and skipped setting WINE_FUNC )
-#test -z ${W64} &&\
-#  WINE_FUNC='unset -f wine' ||\
-#  WINE_FUNC='function wine { wine64 ${@}; }'
-
 echo \
 '#!/bin/bash
 OLD_W="${W}"
-test -z "${OLD_W}" || PATH="$(echo ${PATH} | sed s@"${OLD_W}/bin:"@@g)"
+test -z "${OLD_W}" || PATH="${PATH//"${OLD_W}/bin:"/}"
 W="'"${WINE_DIR}"'"
-PATH="$(echo ${PATH} | sed s@"${W}/bin:"@@g)"
+PATH="${PATH//"${W}/bin:"//}"
 export PATH="${W}/bin:${PATH}"
 export WINEVERPATH="${W}"
 export WINEPREFIX="'"${PFX}"'"

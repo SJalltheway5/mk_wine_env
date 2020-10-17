@@ -36,7 +36,7 @@ $ mk_wine_env
   Print the active wine environment with:
     wine_env
 ```
-Note the environment file in this case is `.wine_env` instead of `wine_env`, due to the filename being determined by the prefix (`.wine`) rather than being explicitly set.<br><br>
+Note the environment file in this case is `.wine_env` instead of `example_env`, due to the filename being determined by the prefix (`~/.wine`) rather than being explicitly set.<br><br>
 Enabling the Wine environment:
 ```
 $ source /home/example/example_env
@@ -57,18 +57,22 @@ Example:
 mk_wine_run with no arguments runs in interactive mode.
 ```
 If no `script name` is set, it will default to `run.sh`.<br><br>
-Assuming a `_env` file has already been created, output will look something like this:
+Assuming a(n) `_env` file has already been created, output will look something like this:
 ```
 $ mk_wine_run ~/example.exe ~/example_env ~/example.sh
-  Creating script for Wine app...
+  Creating script for Wine application...
     Script written to "/home/example/example.sh"
+
+  Edit this script before running.
 ```
 Alternatively:
 ```
 $ mk_wine_run
   .exe file: ~/example.exe
   Wine _env: ~/example_env
-  Creating script for Wine app...
+  Creating script for Wine application...
     Script written to "/home/example/run.sh"
+
+  Edit this script before running.
 ```
 Note the script in this case is `run.sh`, due to no script name being explicitly given.  This script is a template and is intended to be edited before being run (see `example_run.sh`).

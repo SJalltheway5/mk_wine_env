@@ -5,28 +5,35 @@ OLD_W="${W}"
 #test -z "${OLD_W}" || PATH="$(echo ${PATH} | sed s@"${OLD_W}/bin:"@@g)"
 test -z "${OLD_W}" || PATH="${PATH//"${OLD_W}/bin:"/}"
 # Set Wine environment
-W="${HOME}/Wine/5.0"  # Set this to Wine directory
-#PATH="$(echo ${PATH} | sed s@"${W}/bin:"@@g)"
-PATH="${PATH//"${W}/bin:"//}"
-export PATH="${W}/bin:${PATH}"
-export WINEVERPATH="${W}"
-export WINEPREFIX="${HOME}/Wine/Prefixes/example_pfx"
-export WINESERVER="${W}/bin/wineserver"
-export WINELOADER="${W}/bin/wine"
-export WINEDLLPATH="${W}/lib/wine/fakedlls"
-export WINEDLLOVERRIDES="d3d11=n,b;dxgi=n,b"  # DXVK overrides (not default)
-export WINEDEBUG="fixme-all"
-export LD_LIBRARY_PATH="${W}/lib:${LD_LIBRARY_PATH}"
+W="${HOME}/Wine/5.0.2"  # Set this to the directory containing "bin/wine", e.g /usr
+PATH="${W}/bin:${PATH//"${W}/bin:"//}"
+WINEVERPATH="${W}"
+WINEPREFIX="${HOME}/Wine/Prefixes/example_pfx"
+WINESERVER="${W}/bin/wineserver"
+WINELOADER="${W}/bin/wine"
+WINEDLLPATH="${W}/lib/wine/fakedlls"
+WINEDLLOVERRIDES=""
+WINEDEBUG="fixme-all"
+LD_LIBRARY_PATH="${W}/lib:${LD_LIBRARY_PATH}"
+export \
+  PATH \
+  WINEVERPATH \
+  WINESERVER \
+  WINELOADER \
+  WINEDLLPATH \
+  WINEDLLOVERRIDES \
+  WINEDEBUG \
+  LD_LIBRARY_PATH
 # Set Wine functions
-function winecfg { wine winecfg.exe; }
-function wineboot { wine wineboot.exe; }
-function explorer { wine explorer.exe; }
-function notepad { wine notepad.exe; }
-function wordpad { wine wordpad.exe; }
-function cmd { wine cmd.exe; }
-function regedit { wine regedit.exe; }
+function winecfg  { wine winecfg.exe  "${@}"; }
+function wineboot { wine wineboot.exe "${@}"; }
+function explorer { wine explorer.exe "${@}"; }
+function notepad  { wine notepad.exe  "${@}"; }
+function wordpad  { wine wordpad.exe  "${@}"; }
+function cmd      { wine cmd.exe      "${@}"; }
+function regedit  { wine regedit.exe  "${@}"; }
 function wine_env { cat << DONE; }
-Wine binary: $(which wine)
+Wine binary: $(command -v wine)
              $(wine --version)
 Wine prefix: ${WINEPREFIX}
 DONE

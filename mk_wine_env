@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 # Script to create various Wine environments
+# shellcheck disable=SC2016
+# shellcheck disable=SC2086
+# shellcheck disable=SC1004
 
 # Usage
 function usage { cat << DONE; }
@@ -23,43 +26,56 @@ fi
 # Set Wine binary
 BIN="${1}"
 test -z "${BIN}" && read -rep 'Wine binary: ' BIN
-# Allow ~ and ''
+
+# Allow ~ and '' -- should make a function for this
 BIN="${BIN//"~"/"${HOME}"}"
 test "$(echo "${BIN}" | cut -c -1)" == "'" &&\
   test "$(echo "${BIN}" | rev | cut -c -1)" == "'" &&\
   BIN="$(echo "${BIN}" | cut -c 2- | rev | cut -c 2- | rev)"
+
 # Check Wine binary
-pushd "$(dirname "${BIN}")" >/dev/null
+pushd "$(dirname "${BIN}")" >/dev/null || exit 1
 case "$(basename "${BIN}")" in
+
   wine)
     if test -d ../lib64 && test -f wine64; then
       LIB64='${W}/lib64:'
       W64='64'
     else
-      LIB64=''
-      W64=''
-    fi;;
+      LIB64=
+      W64=
+    fi
+    ;;
+
   wine64)
     LIB64='${W}/lib64:'
-    W64='64';;
+    W64=64
+    ;;
+
   '')
     echo
     echo 'ERROR: No Wine binary given.'
-    exit 1;;
+    exit 1
+    ;;
+
   *)
     echo 'ERROR: Is Wine binary correct?'
-    exit 1;;
+    exit 1
+    ;;
+
 esac
-popd >/dev/null
+popd >/dev/null || exit 1
 
 # Directory for new/of existing Wine prefix
 PFX="${2}"
 test -z "${PFX}" && read -rep 'Wine prefix: ' PFX
+
 # Allow ~ and ''
 PFX="${PFX//"~"/"${HOME}"}"
 test "$(echo "${PFX}" | cut -c -1)" == "'" &&\
   test "$(echo "${PFX}" | rev | cut -c -1)" == "'" &&\
   PFX="$(echo "${PFX}" | cut -c 2- | rev | cut -c 2- | rev)"
+
 if test -z "${PFX}"; then
   echo
   echo 'ERROR: No Wine prefix given.'
@@ -74,11 +90,13 @@ if test -z "${ENV}"; then
   ENV="./$(basename "${PFX}")_env"
   ENV="${ENV//_pfx_env/_env}"
 fi
+
 # Allow ~ and ''
 ENV="${ENV//"~"/"${HOME}"}"
 test "$(echo "${ENV}" | cut -c -1)" == "'" &&\
   test "$(echo "${ENV}" | rev | cut -c -1)" == "'" &&\
   ENV="$(echo "${ENV}" | cut -c 2- | rev | cut -c 2- | rev)"
+
 ENV="$(cd "$(dirname "${ENV}")" && pwd)/$(basename "${ENV}")"
 export ENV
 
@@ -88,28 +106,37 @@ WINE_DIR="$(cd "$(dirname "${BIN}")/.." && pwd)"
 
 echo \
 '#!/bin/bash
+# Wine environment for "'"$(basename ${PFX})"'"
 OLD_W="${W}"
 test -z "${OLD_W}" || PATH="${PATH//"${OLD_W}/bin:"/}"
 W="'"${WINE_DIR}"'"
-PATH="${PATH//"${W}/bin:"//}"
-export PATH="${W}/bin:${PATH}"
-export WINEVERPATH="${W}"
-export WINEPREFIX="'"${PFX}"'"
-export WINESERVER="${W}/bin/wineserver"
-export WINELOADER="${W}/bin/wine"
-export WINEDLLPATH="${W}/lib/wine/fakedlls"
-export WINEDLLOVERRIDES=""
-export WINEDEBUG="fixme-all"
-export LD_LIBRARY_PATH="'${LIB64}'${W}/lib:${LD_LIBRARY_PATH}"
-function winecfg { wine'${W64}' winecfg.exe ${@}; }
-function wineboot { wine'${W64}' wineboot.exe ${@}; }
-function explorer { wine'${W64}' explorer.exe ${@}; }
-function notepad { wine'${W64}' notepad.exe ${@}; }
-function wordpad { wine'${W64}' wordpad.exe ${@}; }
-function cmd { wine'${W64}' cmd.exe ${@}; }
-function regedit { wine'${W64}' regedit.exe ${@}; }
+PATH="${W}/bin:${PATH//"${W}/bin:"//}"
+WINEVERPATH="${W}"
+WINEPREFIX="'"${PFX}"'"
+WINESERVER="${W}/bin/wineserver"
+WINELOADER="${W}/bin/wine"
+WINEDLLPATH="${W}/lib/wine/fakedlls"
+WINEDLLOVERRIDES=""
+WINEDEBUG="fixme-all"
+LD_LIBRARY_PATH="'${LIB64}'${W}/lib:${LD_LIBRARY_PATH}"
+export \
+  PATH \
+  WINEVERPATH \
+  WINESERVER \
+  WINELOADER \
+  WINEDLLPATH \
+  WINEDLLOVERRIDES \
+  WINEDEBUG \
+  LD_LIBRARY_PATH
+function winecfg  { wine'${W64}' winecfg.exe  "${@}"; }
+function wineboot { wine'${W64}' wineboot.exe "${@}"; }
+function explorer { wine'${W64}' explorer.exe "${@}"; }
+function notepad  { wine'${W64}' notepad.exe  "${@}"; }
+function wordpad  { wine'${W64}' wordpad.exe  "${@}"; }
+function cmd      { wine'${W64}' cmd.exe      "${@}"; }
+function regedit  { wine'${W64}' regedit.exe  "${@}"; }
 function wine_env { cat << DONE; }
-Wine binary: $(which wine'${W64}')
+Wine binary: $(command -v wine'${W64}')
              $(wine'${W64}' --version)
 Wine prefix: ${WINEPREFIX}
 DONE
@@ -117,6 +144,10 @@ wine_env' > "${ENV}"
 
 # End message
 echo '  File saved to "'${ENV}'"
+
 To enable it, run:
   source "'${ENV}'"
+
+Print the active wine environment with:
+  wine_env
 '

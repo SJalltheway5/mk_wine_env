@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # Create bash script to run Wine application in given environment
+# shellcheck disable=SC2016
+# shellcheck disable=SC2086
 
 # Usage
 function usage { cat << DONE; }
@@ -23,11 +25,13 @@ fi
 # Set Windows .exe file
 EXE="${1}"
 test -z "${EXE}" && read -rep '.exe file: ' EXE
-# Allow ~ and ''
+
+# Allow ~ and '' -- should make a function for this
 EXE="${EXE//"~"/"$HOME"}"
 test "$(echo "${EXE}" | cut -c -1)" == "'" &&\
   test "$(echo "${EXE}" | rev | cut -c -1)" == "'" &&\
-  PFX="$(echo "${EXE}" | cut -c 2- | rev | cut -c 2- | rev)"
+  EXE="$(echo "${EXE}" | cut -c 2- | rev | cut -c 2- | rev)"
+
 EXE_DIR="$(cd "$(dirname "${EXE}")" && pwd)"
 EXE="$(basename "${EXE}")"
 
@@ -36,11 +40,13 @@ ENV="${2}"
 if test -z "${ENV}"; then
   read -rep 'Wine _env: ' ENV
 fi
+
 # Allow ~ and ''
 ENV="${ENV//"~"/"$HOME"}"
 test "$(echo "${ENV}" | cut -c -1)" == "'" &&\
   test "$(echo "${ENV}" | rev | cut -c -1)" == "'" &&\
-  PFX="$(echo "${ENV}" | cut -c 2- | rev | cut -c 2- | rev)"
+  ENV="$(echo "${ENV}" | cut -c 2- | rev | cut -c 2- | rev)"
+
 ENV_DIR="$(cd "$(dirname "${ENV}")" && pwd)"
 ENV="$(basename "${ENV}")"
 ENV="${ENV_DIR}/${ENV}"
@@ -59,17 +65,17 @@ ENV="${ENV//"${SCRIPT_DIR}"/.}"
 EXE_DIR="${EXE_DIR//"${SCRIPT_DIR}"/.}"
 
 # Write script template
-echo 'Creating script for Wine app...'
+echo 'Creating script for Wine application...'
 echo \
 '#!/bin/bash
-# Wine application script template
-# VVV  Remove this line  VVV
-echo "Edit this script before running."; exit 1
+# Wine launch script for '"$(basename "${EXE}")"'
+# vvv  Remove this line  vvv
+echo "Edit this script before running."; exit
 
-# Change to script directory
-cd "${0%/*}" || exit 1
+# Change to script'"'s"' directory
+cd "$(cd "${0%/*}" && pwd)" || exit 1
 
-# Set up Wine environment
+# Set Wine environment
 source "'"${ENV}"'"
 
 # Set application .exe to run
@@ -81,4 +87,6 @@ wine "${EXE}" "${@}"' > "${SCRIPT}"
 
 chmod +x "${SCRIPT}"
 echo '  Script written to "'${SCRIPT_DIR}/${SCRIPT}'"
+
+Edit this script before running.
 '

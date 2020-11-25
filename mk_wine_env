@@ -33,6 +33,8 @@ test "$(echo "${BIN}" | cut -c -1)" == "'" &&\
   test "$(echo "${BIN}" | rev | cut -c -1)" == "'" &&\
   BIN="$(echo "${BIN}" | cut -c 2- | rev | cut -c 2- | rev)"
 
+BIN="${BIN//\\/}" # need to make sure backslashes are removed too
+
 # Check Wine binary
 pushd "$(dirname "${BIN}")" >/dev/null || exit 1
 case "$(basename "${BIN}")" in
@@ -106,7 +108,7 @@ WINE_DIR="$(cd "$(dirname "${BIN}")/.." && pwd)"
 
 echo \
 '#!/bin/bash
-# Wine environment for "'"$(basename ${PFX})"'"
+# Wine environment for "'"$(basename "${PFX}")"'"
 OLD_W="${W}"
 test -z "${OLD_W}" || PATH="${PATH//"${OLD_W}/bin:"/}"
 W="'"${WINE_DIR}"'"
